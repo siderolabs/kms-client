@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package sidero.kms;
+
+option go_package = "github.com/siderolabs/kms/api/kms";
+
+// KMSService provides APIs to encrypt and decrypt data.
+service KMSService {
+  rpc Seal(Request) returns (Response);
+  rpc Unseal(Request) returns (Response);
+}
+
+message Request {
+  // Node UUID as string.
+  string node_uuid = 1;
+  // Data to encrypt or decrypt.
+  bytes data = 2;
+}
+
+message Response {
+  // Data is encrypted/decrypted response.
+  bytes data = 1;
+}

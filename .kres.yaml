@@ -1,0 +1,8 @@
+---
+kind: golang.Generate
+spec:
+  vtProtobufEnabled: true
+  specs:
+    - source: api/kms/kms.proto
+      subdirectory: kms
+
