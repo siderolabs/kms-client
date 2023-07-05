@@ -49,7 +49,7 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	srv := server.NewServer(func(string) ([]byte, error) { return key, nil })
+	srv := server.NewServer(func(context.Context, string) ([]byte, error) { return key, nil })
 
 	s := grpc.NewServer()
 	kms.RegisterKMSServiceServer(s, srv)

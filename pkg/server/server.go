@@ -24,21 +24,21 @@ import (
 type Server struct {
 	kms.UnimplementedKMSServiceServer
 
-	getKey func(string) ([]byte, error)
+	getKey func(context.Context, string) ([]byte, error)
 }
 
 // NewServer initializes new server.
-func NewServer(keyHandler func(nodeUUID string) ([]byte, error)) *Server {
+func NewServer(keyHandler func(ctx context.Context, nodeUUID string) ([]byte, error)) *Server {
 	return &Server{
 		getKey: keyHandler,
 	}
 }
 
 // Seal encrypts the incoming data.
-func (srv *Server) Seal(_ context.Context, req *kms.Request) (*kms.Response, error) {
+func (srv *Server) Seal(ctx context.Context, req *kms.Request) (*kms.Response, error) {
 	time.Sleep(time.Second)
 
-	key, err := srv.getKey(req.NodeUuid)
+	key, err := srv.getKey(ctx, req.NodeUuid)
 	if err != nil {
 		key, err = getRandomAESKey()
 		if err != nil {
@@ -73,10 +73,10 @@ func (srv *Server) Seal(_ context.Context, req *kms.Request) (*kms.Response, err
 }
 
 // Unseal decrypts the incoming data.
-func (srv *Server) Unseal(_ context.Context, req *kms.Request) (*kms.Response, error) {
+func (srv *Server) Unseal(ctx context.Context, req *kms.Request) (*kms.Response, error) {
 	time.Sleep(time.Second)
 
-	key, err := srv.getKey(req.NodeUuid)
+	key, err := srv.getKey(ctx, req.NodeUuid)
 	if err != nil {
 		key, err = getRandomAESKey()
 		if err != nil {

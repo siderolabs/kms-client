@@ -31,7 +31,7 @@ func (suite *ServerSuite) TestSealUnseal() {
 	_, err = io.ReadFull(rand.Reader, passphrase)
 	suite.Require().NoError(err)
 
-	srv := server.NewServer(func(nodeUUID string) ([]byte, error) {
+	srv := server.NewServer(func(_ context.Context, nodeUUID string) ([]byte, error) {
 		if nodeUUID != "abcd" {
 			return nil, fmt.Errorf("unknown node %s", nodeUUID)
 		}
@@ -75,7 +75,7 @@ func (suite *ServerSuite) TestInvalidInputs() {
 	_, err = io.ReadFull(rand.Reader, passphrase)
 	suite.Require().NoError(err)
 
-	srv := server.NewServer(func(nodeUUID string) ([]byte, error) {
+	srv := server.NewServer(func(_ context.Context, nodeUUID string) ([]byte, error) {
 		if nodeUUID != "abcd" {
 			return nil, fmt.Errorf("unknown node %s", nodeUUID)
 		}
