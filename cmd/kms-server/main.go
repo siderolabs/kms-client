@@ -16,6 +16,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	"github.com/siderolabs/kms-client/api/kms"
 	"github.com/siderolabs/kms-client/pkg/server"
@@ -24,11 +25,17 @@ import (
 var kmsFlags struct {
 	apiEndpoint string
 	keyPath     string
+	tlsCertPath string
+	tlsKeyPath  string
+	tlsEnable   bool
 }
 
 func main() {
 	flag.StringVar(&kmsFlags.apiEndpoint, "kms-api-endpoint", ":4050", "gRPC API endpoint for the KMS")
 	flag.StringVar(&kmsFlags.keyPath, "key-path", "", "encryption key path")
+	flag.BoolVar(&kmsFlags.tlsEnable, "tls-enable", false, "whether to enable tls or not")
+	flag.StringVar(&kmsFlags.tlsCertPath, "tls-cert-path", "", "encryption key path")
+	flag.StringVar(&kmsFlags.tlsKeyPath, "tls-key-path", "", "encryption key path")
 	flag.Parse()
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -51,7 +58,21 @@ func run(ctx context.Context) error {
 
 	srv := server.NewServer(func(context.Context, string) ([]byte, error) { return key, nil })
 
-	s := grpc.NewServer()
+	var s *grpc.Server
+
+	if kmsFlags.tlsEnable {
+		var creds credentials.TransportCredentials
+
+		creds, err = credentials.NewServerTLSFromFile(kmsFlags.tlsCertPath, kmsFlags.tlsKeyPath)
+		if err != nil {
+			return fmt.Errorf("failed to create credentials: %w", err)
+		}
+
+		s = grpc.NewServer(grpc.Creds(creds))
+	} else {
+		s = grpc.NewServer()
+	}
+
 	kms.RegisterKMSServiceServer(s, srv)
 
 	lis, err := net.Listen("tcp", kmsFlags.apiEndpoint)
